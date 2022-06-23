@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
+﻿
 using System.Windows;
 
 namespace IdleWigglyWagger
@@ -13,5 +8,40 @@ namespace IdleWigglyWagger
     /// </summary>
     public partial class App : Application
     {
+        // Private members
+        ///////////////////////////////
+
+        private IIdleWigglyWagger _wigglyWaggerApp;
+        private WigglyWaggerAppVM _wigglyWaggerAppVM;
+        private static MainWindow _appWindow;
+
+
+        // Event Handlers
+        ///////////////////////////////
+        private void onAppStartup( object sender, StartupEventArgs e )
+        {
+            // Instantiate App class and ViewModel
+            _wigglyWaggerApp = new WigglyWaggerApp();
+            _wigglyWaggerAppVM = new WigglyWaggerAppVM( _wigglyWaggerApp );
+
+            _appWindow = new MainWindow
+            {
+                DataContext = _wigglyWaggerAppVM, // Binds the view to the application viewmodel
+                Title = "Idle Wiggly Waggler", // Window Title
+                ResizeMode = ResizeMode.NoResize, // Stops the ability to resize by dragging or Maximise... can still minimise
+
+            };
+
+            // Subscribe to any window events
+            _appWindow.ButtonToggleMouseMovement.Click += onButtonToggleMouseMovementClicked;
+
+            // DO THE THING
+            _appWindow.Show();
+        }
+
+        private void onButtonToggleMouseMovementClicked( object sender, RoutedEventArgs e )
+        {
+            _wigglyWaggerApp.MouseMovementIsEnabled ^= true;
+        }
     }
 }
