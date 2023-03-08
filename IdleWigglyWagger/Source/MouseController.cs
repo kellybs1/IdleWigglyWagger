@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace IdleWigglyWagger
 {
@@ -32,6 +33,17 @@ namespace IdleWigglyWagger
 
         private static readonly Random _random = new();
 
+        // Three second leeway after stopping mouse movement
+        private static int _leewayTimeInMilliseconds = 3000;
+        private static bool _leewayIsActive = false;
+        private static Timer _mouseMovementLeewayTimer = new Timer( ( object state ) =>
+                                                                    {
+                                                                        _leewayIsActive = false;
+                                                                    },
+                                                                    null,
+                                                                    Timeout.Infinite,
+                                                                    Timeout.Infinite );
+
         // Public methods
         ///////////////////////////////
 
@@ -39,9 +51,13 @@ namespace IdleWigglyWagger
         {
             GetCursorPos( out _currentPosition );
 
-            if ( _firstLoop ||
-                 ( _currentPosition == _previousSetPosition ) ||
-                 ( _currentPosition == _previousPosition )
+            if ( _leewayIsActive )
+            {
+                // do nothing, wait for the timer to expire so mouse will start wiggling then
+            }
+            else if ( _firstLoop ||
+                    ( _currentPosition == _previousSetPosition ) ||
+                    ( _currentPosition == _previousPosition )
                )
             {
                 _firstLoop = false;
@@ -51,6 +67,9 @@ namespace IdleWigglyWagger
             {
                 // mouse has been manually moved away from the place where we left it
                 // consider this detection of user input - let them use the mouse by not wiggling
+                _leewayIsActive = true;
+                _mouseMovementLeewayTimer.Change( _leewayTimeInMilliseconds, Timeout.Infinite );
+
             }
 
             _previousPosition = _currentPosition;
