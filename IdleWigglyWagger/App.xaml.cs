@@ -28,7 +28,7 @@ namespace IdleWigglyWagger
             {
                 DataContext = _wigglyWaggerAppVM, // Binds the view to the application viewmodel
                 Title = "Idle Wiggly Waggler", // Window Title
-                ResizeMode = ResizeMode.NoResize, // Stops the ability to resize by dragging or Maximise... can still minimise
+                ResizeMode = ResizeMode.CanMinimize, // Stops the ability to resize by dragging or Maximise... can still minimise
                 Topmost = true,
                 Height = 330,
                 Width = 420
