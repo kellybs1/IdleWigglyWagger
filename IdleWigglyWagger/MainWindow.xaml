@@ -11,10 +11,17 @@
     <Grid>
 
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Button Grid.Row="0"
+        <ComboBox Grid.Row="0"
+                  FontFamily="{StaticResource MontserratLight}"
+                  DisplayMemberPath="DisplayName"
+                  ItemsSource="{Binding PositionCalculators}"
+                  SelectedItem="{Binding SelectedPositionCalculator}"/>
+
+        <Button Grid.Row="1"
                 BorderThickness="0"
                 Name="ButtonToggleMouseMovement"
                 Content="{Binding MouseMovementIsEnabledLabel}"

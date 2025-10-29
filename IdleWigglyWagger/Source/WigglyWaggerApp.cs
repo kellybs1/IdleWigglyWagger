@@ -1,5 +1,10 @@
-﻿using System.Threading;
+﻿using IdleWigglyWagger.Source;
+using IdleWigglyWagger.Source.PositionCalculators;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
+using System.Threading;
 
 namespace IdleWigglyWagger
 {
@@ -10,12 +15,15 @@ namespace IdleWigglyWagger
         // Private members
         ///////////////////////////////
 
-        private const int _MouseMovementUpdateUpdateTickRateInMilliseconds = 50;
+        private readonly Random _random = new();
+
+        private const int _MouseMovementUpdateUpdateTickRateInMilliseconds = 100;
 
         private Timer _mouseMovementUpdateTimer;
 
         private bool _mouseMovementIsEnabled = false;
 
+        private List<IPositionCalculator> _positionCalculators;
 
         // Constructors
         ///////////////////////////////
@@ -23,11 +31,20 @@ namespace IdleWigglyWagger
         public WigglyWaggerApp()
         {
             _mouseMovementUpdateTimer = new Timer( onMouseMovementTick, null, Timeout.Infinite, Timeout.Infinite );
-        }
 
+            _positionCalculators =
+            [
+                new RandomPositionCalculator( _random ),
+                new SquarePositionCalculator(),
+            ];
+
+            this.SelectedPositionCalculator = _positionCalculators.First();
+        }
 
         // Public Members
         ///////////////////////////////
+
+        public List<IPositionCalculator> PositionCalculators => _positionCalculators;
 
         public bool MouseMovementIsEnabled
         {
@@ -36,6 +53,13 @@ namespace IdleWigglyWagger
             {
                 if ( _mouseMovementIsEnabled != value )
                 {
+                    if ( value )
+                    {
+                        // Changed from not active to active
+                        // Ensure the leeway works immediately
+                        MouseController.ResetLeeway();
+                    }
+
                     updateTimerState( ref _mouseMovementUpdateTimer, value, _MouseMovementUpdateUpdateTickRateInMilliseconds );
                     _mouseMovementIsEnabled = value;
                 }
@@ -44,6 +68,11 @@ namespace IdleWigglyWagger
             }
         }
 
+        public IPositionCalculator SelectedPositionCalculator
+        {
+            get => MouseController.PositionCalculator;
+            set => MouseController.PositionCalculator = value;
+        }
 
         // Private Methods
         ///////////////////////////////

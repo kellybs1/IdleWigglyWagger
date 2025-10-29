@@ -1,10 +1,11 @@
 ﻿
+using IdleWigglyWagger.Source;
+
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace IdleWigglyWagger
 {
-
-
     public class WigglyWaggerAppVM : INotifyPropertyChanged
     {
         // Events
@@ -41,6 +42,14 @@ namespace IdleWigglyWagger
 
         // Only used for display purposes - not settable
         public string MouseMovementIsEnabledLabel => this.MouseMovementIsEnabled ? "Click to Disable Wiggling" : "Click to Enable Wiggling";
+
+        public List<IPositionCalculator> PositionCalculators => _appInterface.PositionCalculators;
+
+        public IPositionCalculator SelectedPositionCalculator
+        {
+            get => _appInterface.SelectedPositionCalculator;
+            set => _appInterface.SelectedPositionCalculator = value;
+        }
 
 
         // Public Methods

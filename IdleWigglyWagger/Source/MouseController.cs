@@ -1,4 +1,8 @@
-﻿using System;
+﻿
+using IdleWigglyWagger.Source;
+using IdleWigglyWagger.Source.PositionCalculators;
+
+using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -28,14 +32,10 @@ namespace IdleWigglyWagger
         private static Point _currentPosition = new Point( 0, 0 );
         private static Point _previousPosition = new Point( 0, 0 );
         private static Point _previousSetPosition = new Point( 0, 0 );
-        private static bool _firstLoop = true;
-
-
-        private static readonly Random _random = new();
 
         // Three second leeway after stopping mouse movement
         private static int _leewayTimeInMilliseconds = 3000;
-        private static bool _leewayIsActive = false;
+        private static bool _leewayIsActive = true;
         private static Timer _mouseMovementLeewayTimer = new Timer( ( object state ) =>
                                                                     {
                                                                         _leewayIsActive = false;
@@ -44,8 +44,20 @@ namespace IdleWigglyWagger
                                                                     Timeout.Infinite,
                                                                     Timeout.Infinite );
 
+
+        // Public members
+        ///////////////////////////////
+
+        public static IPositionCalculator PositionCalculator { get; set; }
+
         // Public methods
         ///////////////////////////////
+
+        public static void ResetLeeway()
+        {
+            _leewayIsActive = true;
+            _mouseMovementLeewayTimer.Change( _leewayTimeInMilliseconds, Timeout.Infinite );
+        }
 
         public static void UpdateMousePosition()
         {
@@ -55,44 +67,21 @@ namespace IdleWigglyWagger
             {
                 // do nothing, wait for the timer to expire so mouse will start wiggling then
             }
-            else if ( _firstLoop ||
-                    ( _currentPosition == _previousSetPosition ) ||
-                    ( _currentPosition == _previousPosition )
-               )
+            else if ( ( _currentPosition == _previousSetPosition ) ||
+                      ( _currentPosition == _previousPosition ) )
             {
-                _firstLoop = false;
-                MoveInRandomDirection();
+                _previousSetPosition = PositionCalculator.GetNextPosition( _currentPosition, _MinMouseMovementStepInPixels, _MaxMouseMovementStepInPixels );
+                SetCursorPos( _previousSetPosition.X, _previousSetPosition.Y );
             }
             else
             {
                 // mouse has been manually moved away from the place where we left it
                 // consider this detection of user input - let them use the mouse by not wiggling
-                _leewayIsActive = true;
-                _mouseMovementLeewayTimer.Change( _leewayTimeInMilliseconds, Timeout.Infinite );
+                ResetLeeway();
 
             }
 
             _previousPosition = _currentPosition;
-        }
-
-
-        // Private methods
-        ///////////////////////////////
-
-        private static void MoveInRandomDirection()
-        {
-            // Randomly choose the size of the next movement
-            var xStepSize = _random.Next( _MinMouseMovementStepInPixels, _MaxMouseMovementStepInPixels );
-            var yStepSize = _random.Next( _MinMouseMovementStepInPixels, _MaxMouseMovementStepInPixels );
-
-            // Decide on a 0/1 random whether to move to the positive or negative
-            var newX = ( _random.Next( 2 ) != 0 ) ? ( _currentPosition.X + xStepSize ) : ( _currentPosition.X - xStepSize );
-            var newY = ( _random.Next( 2 ) != 0 ) ? ( _currentPosition.Y + yStepSize ) : ( _currentPosition.Y - yStepSize );
-
-            _previousSetPosition.X = newX;
-            _previousSetPosition.Y = newY;
-
-            SetCursorPos( newX, newY );
         }
     }
 }
